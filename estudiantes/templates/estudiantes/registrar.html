@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Estudiante</title>
+  <link rel="stylesheet" href="{% static 'estudiantes/css/registro.css' %}">
+</head>
+<body>
+
+  <header class="top-banner">
+    <div class="banner-content">
+      <img src="{% static 'landing/img/ceama.png' %}" alt="Logo CEAMA" class="logo">
+      <h1 class="banner-title">ADMISIÓN 2026</h1>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="form-card">
+      <div class="form-header">Registro de Estudiante</div>
+      <div class="form-body">
+
+        <div class="progress-steps">
+          <div class="step-container">
+            <div class="step">1</div>
+            <span class="step-label">Datos del Estudiante</span>
+          </div>
+          <div class="step-container">
+            <div class="step">2</div>
+            <span class="step-label">Datos del Apoderado</span>
+          </div>
+          <div class="step-container">
+            <div class="step">3</div>
+            <span class="step-label">Pago</span>
+          </div>
+        </div>
+
+        <div class="progress-container step1">
+          <div class="progress-bar"></div>
+        </div>
+
+        <h2 class="section-title">Datos del Alumno</h2>
+
+        {% if form_error %}
+          <div class="alert error" style="margin-bottom:16px;padding:12px;border-radius:6px;background:#ffe6e6;color:#900;">{{ form_error }}</div>
+        {% endif %}
+
+        <form method="post" action="">
+          {% csrf_token %}
+          <div class="form-layout">
+            <div class="form-main">
+              <div class="form-grid">
+            <!-- Grado (con id) -->
+            <div class="form-group">
+              <label>Grado:</label>
+              <select name="grado" id="grado" required>
+                <option value="" disabled {% if not grado %}selected{% endif %}>-- Seleccione grado --</option>
+                {% for valor, nombre in grados %}
+                  <option value="{{ valor }}" {% if valor == grado %}selected{% endif %}>{{ nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Nombres:</label>
+              <input type="text" name="nombres" maxlength="30" required value="{{ nombres|default_if_none:'' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Apellidos:</label>
+              <input type="text" name="apellidos" maxlength="30" required value="{{ apellidos|default_if_none:'' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Colegio:</label>
+              <input type="text" name="colegio" maxlength="30" required value="{{ colegio|default_if_none:'' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Edad:</label>
+              <input type="number" name="edad" min="5" max="20" required value="{{ edad|default_if_none:'' }}" maxlength="2" inputmode="numeric" oninput="if(this.value.length>2) this.value=this.value.slice(0,2);">
+            </div>
+
+            <div class="form-group">
+              <label>Asignación:</label>
+              <select name="asignacion" id="asignacion" required>
+                <option value="">-- Seleccione una asignación --</option>
+                {% for a in asignaciones %}
+                  <option value="{{ a.id }}">{{ a.plan }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+              <div class="form-actions">
+            <button type="submit" class="btn-submit">Registrar</button>
+            <a href="/" class="btn-submit" style="margin-left:10px; text-align:center; display:inline-block;">
+              Regresar a la página principal
+            </a>
+              </div>
+            </div>
+
+            <aside class="form-sidebar">
+              <div id="asignacion-panel" class="asignacion-panel">
+                <h3>Detalles de la asignación</h3>
+                <div id="asignacion-card" style="padding:12px;border-radius:8px;border:1px solid #e6e6e6;background:#fff;">
+                  <div id="asignacion-badge" style="float:right;margin-left:8px"></div>
+                  <p id="asignacion-plan"><strong>Plan:</strong> —</p>
+                  <p id="asignacion-horario"><strong>Horario:</strong> —</p>
+                  <div id="asignacion-profesores"><strong id="profesores-label">Profesor(es)</strong>
+                    <ul id="asignacion-profesores-list" style="margin:6px 0 0 18px;padding:0;list-style:disc inside;">
+                      <li>&mdash;</li>
+                    </ul>
+                  </div>
+                  <p id="asignacion-aula"><strong>Aula:</strong> —</p>
+                  <p id="asignacion-cupo"><strong>Cupos:</strong> —</p>
+                  <p id="asignacion-precio"><strong>Precio:</strong> —</p>
+                </div>
+              </div>
+            </aside>
+
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const select = document.getElementById('asignacion');
+      const gradoSelect = document.getElementById('grado');
+      const panelHorario = document.getElementById('asignacion-horario');
+      const panelAula = document.getElementById('asignacion-aula');
+      const panelCupo = document.getElementById('asignacion-cupo');
+
+      if(!select) return;
+
+      async function fetchDetalles(id){
+        if(!id) return;
+        const registerBtn = document.querySelector('button[type="submit"].btn-submit');
+        const badgeContainer = document.getElementById('asignacion-badge');
+        const profsListEl = document.getElementById('asignacion-profesores-list');
+        try{
+          const res = await fetch(`/docentes/asignacion/${id}/json/`);
+          if(!res.ok) throw new Error('No se pudo obtener detalles');
+          const data = await res.json();
+          // plan
+          const planVal = data.plan || '—';
+          const panelPlan = document.getElementById('asignacion-plan');
+          if(panelPlan) panelPlan.innerHTML = '<strong>Plan:</strong> ' + planVal;
+
+          // horario (mejor presentado)
+          panelHorario.innerHTML = '<strong>Horario:</strong> ' + (data.horario || '—');
+
+          // profesores (separados) — use the array returned by the endpoint
+          const profs = Array.isArray(data.profesores) ? data.profesores : ((data.profesor || '').split(' / ').map(s => s.trim()).filter(Boolean));
+          profsListEl.innerHTML = '';
+          if(profs.length){
+            profs.forEach(p => {
+              const li = document.createElement('li'); li.textContent = p; profsListEl.appendChild(li);
+            });
+          } else {
+            profsListEl.innerHTML = '<li>&mdash;</li>';
+          }
+          // etiqueta: usar 'Profesor(es)'
+          const label = document.getElementById('profesores-label');
+          if(label){
+            label.textContent = 'Profesor(es)';
+          }
+
+          // aula
+          panelAula.innerHTML = '<strong>Aula:</strong> ' + (data.aula || '—');
+
+          // horario — show days and larger hour range
+          const horario = data.horario || {};
+          if(horario && (horario.dias_text || horario.hora_range)){
+            const horarioHtml = '<strong>Horario:</strong> <div style="margin-top:4px;color:#333;">' + (horario.dias_text ? `<div style="font-weight:600;">${horario.dias_text}</div>` : '') + (horario.hora_range ? `<div style="font-size:16px;font-weight:700;margin-top:6px;">${horario.hora_range}</div>` : '') + '</div>';
+            panelHorario.innerHTML = horarioHtml;
+          } else {
+            panelHorario.innerHTML = '<strong>Horario:</strong> —';
+          }
+
+          // cupos y badge
+          const ocupados = (typeof data.ocupados === 'number') ? data.ocupados : (data.ocupados ? parseInt(data.ocupados) : null);
+          const cupoMax = (typeof data.cupo_maximo === 'number') ? data.cupo_maximo : (data.cupo_maximo ? parseInt(data.cupo_maximo) : null);
+          const cupoText = (ocupados != null && cupoMax != null) ? `${ocupados} / ${cupoMax}` : '—';
+          panelCupo.innerHTML = '<strong>Cupos:</strong> ' + cupoText;
+
+          // precio
+          const panelPrecio = document.getElementById('asignacion-precio');
+          const precio = (typeof data.precio === 'number' && data.precio > 0) ? `S/ ${data.precio.toFixed(2)}` : 'Consultar';
+          if(panelPrecio) panelPrecio.innerHTML = '<strong>Precio:</strong> ' + precio;
+
+          const isFull = (ocupados != null && cupoMax != null && ocupados >= cupoMax);
+          if(isFull){
+            badgeContainer.innerHTML = '<span style="background:#b00;color:#fff;padding:6px 8px;border-radius:6px;font-weight:700;">LLENO</span>';
+            if(registerBtn) registerBtn.disabled = true;
+          } else {
+            badgeContainer.innerHTML = '';
+            if(registerBtn) registerBtn.disabled = false;
+          }
+        }catch(e){
+          panelHorario.innerHTML = '<strong>Horario:</strong> —';
+          profsListEl.innerHTML = '<li>&mdash;</li>';
+          panelAula.innerHTML = '<strong>Aula:</strong> —';
+          panelCupo.innerHTML = '<strong>Cupos:</strong> —';
+          if(registerBtn) registerBtn.disabled = false;
+          if(badgeContainer) badgeContainer.innerHTML = '';
+        }
+      }
+
+      async function loadAsignacionesPorGrado(grado){
+        if(!select) return;
+        // limpiar opciones actuales
+        select.innerHTML = '<option value="">-- Seleccione una asignación --</option>';
+        if(!grado) return;
+        try{
+          const res = await fetch(`/docentes/asignaciones/json/?grado=${encodeURIComponent(grado)}`);
+          if(!res.ok) throw new Error('No se pudo obtener asignaciones');
+          const data = await res.json();
+          data.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.plan || '';
+            select.appendChild(opt);
+          });
+        }catch(e){
+          console.error('Error al cargar asignaciones por grado:', e);
+          select.innerHTML = '<option value="">-- Error cargando asignaciones --</option>';
+        }
+      }
+
+          select.addEventListener('change', function(e){
+        const id = this.value;
+        if(!id){
+          panelHorario.innerHTML = '<strong>Horario:</strong> —';
+          const profsListEl = document.getElementById('asignacion-profesores-list');
+          if(profsListEl) profsListEl.innerHTML = '<li>&mdash;</li>';
+          const label = document.getElementById('profesores-label'); if(label) label.textContent = 'Profesor(es)';
+          panelAula.innerHTML = '<strong>Aula:</strong> —';
+          panelCupo.innerHTML = '<strong>Cupos:</strong> —';
+          return;
+        }
+        fetchDetalles(id);
+        // opcionalmente rellenar campo oculto 'plan' si tu flujo lo necesita
+      });
+
+      // reaccionar al cambio de grado para cargar asignaciones
+      if(gradoSelect){
+          gradoSelect.addEventListener('change', function(){
+          loadAsignacionesPorGrado(this.value);
+          // limpiar panel
+          panelHorario.innerHTML = '<strong>Horario:</strong> —';
+          const profsListEl = document.getElementById('asignacion-profesores-list');
+          if(profsListEl) profsListEl.innerHTML = '<li>&mdash;</li>';
+          const label = document.getElementById('profesores-label'); if(label) label.textContent = 'Profesor(es)';
+          panelAula.innerHTML = '<strong>Aula:</strong> —';
+          panelCupo.innerHTML = '<strong>Cupos:</strong> —';
+        });
+        // cargar asignaciones iniciales para grado por defecto
+        if(gradoSelect.value) loadAsignacionesPorGrado(gradoSelect.value);
+      }
+
+      // Si hay una seleccion por defecto de asignación, cargar sus detalles
+      if(select.value) fetchDetalles(select.value);
+    })();
+  </script>
+</body>
+</html>

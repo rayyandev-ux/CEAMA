@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CEAMA - Centro Educativo{% endblock %}</title>
+  {% load static %}
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    /* Variables HSL esenciales extraídas del index.css de Lovable */
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --border: 214.3 31.8% 91.4%;
+      
+      --primary: 217 91% 60%; /* Azul CEAMA - Base */
+      --primary-foreground: 0 0% 100%;
+
+      --secondary: 280 65% 60%; /* Púrpura */
+      --secondary-foreground: 0 0% 100%;
+
+      --education-primary: 217 91% 60%; /* Azul */
+      --education-secondary: 142 76% 36%; /* Verde */
+      --education-accent: 38 92% 50%; /* Naranja-Amarillo */
+      --education-purple: 280 65% 60%; /* Púrpura */
+      --education-teal: 174 72% 56%; /* Turquesa */
+      --education-coral: 15 90% 65%; /* Coral */
+      --education-orange: 25 95% 53%; /* Naranja */
+      --education-yellow: 48 96% 53%; /* Amarillo */
+
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 47.4% 11.2%;
+    }
+    
+    /* Aplicación de clases y helpers para que Tailwind las lea correctamente */
+    body {
+      color: hsl(var(--foreground));
+      background-color: hsl(var(--background));
+      font-family: "Montserrat", sans-serif;
+    }
+
+    /* Definiciones para custom gradients usados en fondos de sección */
+    .bg-gradient-warm {
+        background-image: linear-gradient(135deg, hsl(var(--education-orange)) 0%, hsl(var(--education-yellow)) 100%);
+    }
+    .bg-gradient-teal {
+        background-image: linear-gradient(135deg, hsl(var(--education-teal)) 0%, hsl(var(--education-primary)) 100%);
+    }
+    .bg-gradient-coral {
+        background-image: linear-gradient(135deg, hsl(var(--education-coral)) 0%, hsl(var(--education-purple)) 100%);
+    }
+    .bg-white\/95 { background-color: hsla(0, 0%, 100%, 0.95); }
+    .text-white { color: hsl(0, 0%, 100%); }
+    .text-white\/90 { color: hsla(0, 0%, 100%, 0.9); }
+    .text-foreground { color: hsl(var(--foreground)); }
+
+    /* Estilo de blur en la Navbar */
+    .backdrop-blur-md {
+        backdrop-filter: blur(8px);
+        background-color: hsla(var(--background), 0.9); 
+    }
+
+    /* Contenedor */
+    .container {
+        max-width: 1280px; 
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+  </style>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <header>
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-primary">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20h-4.5a2.5 2.5 0 0 0 0 5.5Z"/>
+                    </svg>
+                    <span class="text-2xl font-bold text-foreground">CEAMA</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-6">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="scrollToSection('inicio')" class="text-foreground hover:text-primary transition-colors"> Inicio </button>
+                        <button onclick="scrollToSection('cursos')" class="text-foreground hover:text-primary transition-colors"> Cursos </button>
+                        <button onclick="scrollToSection('nosotros')" class="text-foreground hover:text-primary transition-colors"> Nosotros </button>
+                        <button onclick="scrollToSection('contacto')" class="text-foreground hover:text-primary transition-colors"> Contacto </button>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        
+                        <a href="{% url 'pagos_regularizar_lookup' %}" class="border border-primary text-primary hover:bg-primary/10 hover:text-primary font-medium rounded-md h-10 px-3 py-2 inline-flex items-center justify-center gap-2 transition-colors shadow-sm text-sm whitespace-nowrap">
+                            Regularización de pagos
+                        </a>
+                        
+                        <a href="/estudiantes/registrar" class="bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md h-10 px-4 py-2 inline-flex items-center justify-center gap-2 transition-colors shadow-md text-sm">
+                            Inscríbete Ahora
+                        </a>
+                    </div>
+                </div>
+
+                <button class="md:hidden text-foreground" id="mobile-menu-toggle">
+                    <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+                        <line x1="4" x2="20" y1="12" y2="12"></line>
+                        <line x1="4" x2="20" y1="6" y2="6"></line>
+                        <line x1="4" x2="20" y1="18" y2="18"></line>
+                    </svg>
+                    <svg id="x-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 hidden">
+                        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="mobile-menu" class="md:hidden py-4 space-y-4 hidden bg-background/90 border-t border-border px-4">
+                <button onclick="scrollToSection('inicio'); closeMobileMenu();" class="block w-full text-left text-foreground hover:text-primary transition-colors py-2">
+                    Inicio
+                </button>
+                <button onclick="scrollToSection('cursos'); closeMobileMenu();" class="block w-full text-left text-foreground hover:text-primary transition-colors py-2">
+                    Cursos
+                </button>
+                <button onclick="scrollToSection('nosotros'); closeMobileMenu();" class="block w-full text-left text-foreground hover:text-primary transition-colors py-2">
+                    Nosotros
+                </button>
+                <button onclick="scrollToSection('contacto'); closeMobileMenu();" class="block w-full text-left text-foreground hover:text-primary transition-colors py-2">
+                    Contacto
+                </button>
+                
+                <a href="{% url 'pagos_regularizar_lookup' %}" class="w-full border border-primary text-primary hover:bg-primary/10 hover:text-primary font-medium rounded-md h-10 px-4 py-2 inline-flex items-center justify-center gap-2 transition-colors shadow-sm text-sm">
+                    Regularización de pagos
+                </a>
+
+                <a href="/estudiantes/registrar" class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md h-10 px-4 py-2 inline-flex items-center justify-center gap-2 transition-colors shadow-md">
+                    Inscríbete Ahora
+                </a>
+            </div>
+        </div>
+    </nav>
+  </header>
+  
+  {% block content %}{% endblock %}
+
+  <footer class="bg-foreground text-background py-12">
+      <div class="container mx-auto px-4">
+          <div class="grid md:grid-cols-4 gap-8 mb-8">
+              <div class="md:col-span-2">
+                  <div class="flex items-center space-x-2 mb-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8">
+                          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20h-4.5a2.5 2.5 0 0 0 0 5.5Z"/>
+                      </svg>
+                      <span class="text-2xl font-bold">CEAMA</span>
+                  </div>
+                  <p class="text-background/80 mb-4">
+                      Centro de Excelencia Académica en Matemática y Comunicación.
+                      Comprometidos con tu éxito académico y profesional.
+                  </p>
+                  <div class="flex space-x-4">
+                      <a href="#" class="hover:text-primary transition-colors" aria-label="Facebook">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                      </a>
+                      <a href="#" class="hover:text-primary transition-colors" aria-label="Instagram">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                      </a>
+                      <a href="#" class="hover:text-primary transition-colors" aria-label="YouTube">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="m21.73 17.72-2.5-1.44a1 1 0 0 0-1.23.01l-1.37.79a1 1 0 0 0-.54 1.25V23a1 1 0 0 0 .54 1.25l1.37.79a1 1 0 0 0 1.23.01l2.5-1.44A1 1 0 0 0 22 22.1V18.64a1 1 0 0 0-.27-.42z"/><path d="M10 14h10"/><path d="M10 10h6"/><path d="M4 18v2a2 2 0 0 0 2 2h2"/><path d="M4 14v-2a2 2 0 0 1 2-2h10"/><path d="M18 6v-2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/></svg>
+                      </a>
+                      <a href="#" class="hover:text-primary transition-colors" aria-label="LinkedIn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M16 8a6 6 0 0 0-6 6v7H6v-7a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2h-2z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                      </a>
+                  </div>
+              </div>
+
+              <div>
+                  <h3 class="font-bold text-lg mb-4">Enlaces Rápidos</h3>
+                  <ul class="space-y-2">
+                      <li><a href="#inicio" class="text-background/80 hover:text-background transition-colors">Inicio</a></li>
+                      <li><a href="#cursos" class="text-background/80 hover:text-background transition-colors">Cursos</a></li>
+                      <li><a href="#nosotros" class="text-background/80 hover:text-background transition-colors">Nosotros</a></li>
+                      <li><a href="#contacto" class="text-background/80 hover:text-background transition-colors">Contacto</a></li>
+                  </ul>
+              </div>
+
+              <div>
+                  <h3 class="font-bold text-lg mb-4">Contacto</h3>
+                  <ul class="space-y-2 text-background/80">
+                      <li>Av. Universitaria 123</li>
+                      <li>Lima, Perú</li>
+                      <li>+51 999 999 999</li>
+                      <li>info@ceama.edu.pe</li>
+                  </ul>
+              </div>
+          </div>
+
+          <div class="border-t border-background/20 pt-8 text-center text-background/60">
+              <p>© 2025 CEAMA. Todos los derechos reservados.</p>
+          </div>
+      </div>
+  </footer>
+
+  <script src="{% static 'landing/js/interaccion.js' %}"></script>
+
+</body>
+</html>
